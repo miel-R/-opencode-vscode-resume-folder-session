@@ -85,6 +85,16 @@ powershell -ExecutionPolicy Bypass -File unpatch.ps1
   `opencode -c` in a terminal uses its own project-scoped matching; there,
   continue a specific session with `opencode -s <session-id>` or use
   `/sessions` in the TUI.
+- **Cross-folder session leakage:** opencode derives a project ID from the
+  git repo identity of the launch folder — in priority order:
+  `hash(git-remote URL)` → the cached ID in `<git dir>/opencode` → the root
+  commit hash. Any two folders whose git repos share a remote URL (or a copy
+  of the cache file) are the **same opencode project**, so `-c` and the panel
+  can pick up sessions from *other folders* (it lists the whole project when
+  the path filter is skipped). If that happens, give the folder its own
+  identity: `git remote remove origin`, delete `.git/opencode`, re-point the
+  folder's sessions via `opencode db` (`UPDATE session SET project_id='<new>'
+  WHERE directory LIKE '<folder>%'`).
 
 ## How it was diagnosed
 
